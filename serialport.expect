@@ -2,7 +2,7 @@
 
 set timeout 5
 
-spawn picocom -b 115200 /dev/ttyACM0
+spawn picocom -b $env(baudrate) $env(device)
 
 expect "Terminal ready" {
 	send "\r"
