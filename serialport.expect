@@ -15,7 +15,7 @@ expect "login: " {
 	}
 }
 
-expect "#" {
+expect "# " {
 	puts "login success!"
 	puts "username: $env(username)"
 	puts "password: $env(password)"
