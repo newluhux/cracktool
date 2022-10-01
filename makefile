@@ -1,4 +1,4 @@
-CFLAGS += -Wall -Wextra
+CFLAGS += -Wall -Wextra -O3
 LIBS   += -lssh -lzip
 
 all: ssh zip
