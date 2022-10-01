@@ -6,9 +6,14 @@
 
 #define MAXPASSWORDLEN 1024
 
-int main(void) {
-	char *zipfilename = getenv("zipfilename");
-	char *openfilename = getenv("openfilename");
+int main(int argc, char *argv[]) {
+	if (argc < 3) {
+		fprintf(stderr,"usage: %s zipfile fileinzip < wordlist\n"
+			,argv[0]);
+		exit(EXIT_FAILURE);
+	}
+	char *zipfilename = argv[1];
+	char *openfilename = argv[2];
 
 	int err;
 	zip_t *za = zip_open(zipfilename,ZIP_RDONLY,&err);
@@ -26,15 +31,15 @@ int main(void) {
 			pass[strlen(pass)-1] = '\0';
 		zf = zip_fopen_encrypted(za, openfilename, ZIP_RDONLY,
 					 pass);
-		if (zf != NULL) {
+		if (zf == NULL) {
+			printf("try open file: %s ,use pass: %s\n",
+			       openfilename,pass);
+		} else {
 			printf("PASSWORD FOUND: %s %s %s\n",
 			       zipfilename,openfilename,
 			       pass);
 			exit(EXIT_SUCCESS);
 		}
-		printf("try %s %s use %s\n",
-		       zipfilename,openfilename,
-		       pass);
 	}
-	return 0;
+	exit(EXIT_FAILURE);
 }

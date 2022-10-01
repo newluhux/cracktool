@@ -2,30 +2,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char *host = NULL;
-int port = 22;
-char *username = NULL;
-char *password = NULL;
-ssh_session this_session = NULL;
+#define MAXPASSWORDLEN 1024
 
-void exit_hook(void) {
+int main(int argc, char *argv[]) {
+	if (argc < 4) {
+		fprintf(stderr,"usage: %s host port username password\n",
+			argv[0]);
+		exit(EXIT_FAILURE);
+	}
+
+	char *host = argv[1];
+	int port = atoi(argv[2]);
+	char *username = argv[3];
+	char *password = argv[4];
+
+	ssh_session this_session = NULL;
+
 	if (this_session != NULL) {
 		ssh_disconnect(this_session);
 		ssh_free(this_session);
 	}
-}
 
-int main(void) {
-	atexit(exit_hook);
-	host = getenv("host");
-	char *temp = NULL;
-	temp = getenv("port");
-	if (temp != NULL) {
-		port = atoi(temp);
-	}
-	username = getenv("username");
-	password = getenv("password");
-
+	this_session = NULL;
 	this_session = ssh_new();
 	if (this_session == NULL)
 		exit(EXIT_FAILURE);
@@ -38,8 +36,7 @@ int main(void) {
 			&verbosity);
 
 	int ret;
-	ret = ssh_connect(this_session);
-	if (ret != SSH_OK) {
+	if (ssh_connect(this_session) != SSH_OK) {
 		fprintf(stderr,"can't connect to %s:%d, REASON: %s\n",
 			host,port,
 			ssh_get_error(this_session));
@@ -48,7 +45,7 @@ int main(void) {
 
 	ret = ssh_userauth_password(this_session, username, password);
 	if (ret != SSH_AUTH_SUCCESS) {
-		fprintf(stderr,"can't login %s:%d use %s:%s, REASON: %s\n",
+		fprintf(stderr,"try %s:%d ,use %s:%s, REASON: %s\n",
 			host,port,username,password,
 			ssh_get_error(this_session));
 		exit(EXIT_FAILURE);
@@ -56,9 +53,7 @@ int main(void) {
 	if (ret == SSH_AUTH_SUCCESS) {
 		printf("PASSWORD FOUND: %s:%d %s:%s\n",
 		       host,port,username,password);
+		exit(EXIT_SUCCESS);
 	}
-
-	ssh_disconnect(this_session);
-	ssh_free(this_session);
-	return 0;
+	exit(EXIT_FAILURE);
 }
